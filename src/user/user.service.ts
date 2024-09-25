@@ -1,4 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException  } from '@nestjs/common';
+import { isValidObjectId } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
@@ -31,10 +32,31 @@ export class UserService {
   }
 
   async findOne(id: string): Promise<User> {
-    return this.userModel.findById(id).exec();
+
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException(`The id is incorrect`);
+    }
+
+    const user = await this.userModel.findById(id).exec();
+
+    if(!user) {
+      throw new NotFoundException('User no exist');
+    }
+
+    return user;
   }
 
   async update(id: string, user: User): Promise<User> {
+
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException(`The id is incorrect`);
+    }
+
+    const userInfo = await this.userModel.findById(id).exec();
+
+    if(!userInfo) {
+      throw new NotFoundException('User no exist');
+    }
 
     const hashedPassword = await bcrypt.hash(
       user.userPassword, 
@@ -47,6 +69,17 @@ export class UserService {
   }
 
   async delete(id: string): Promise<User> {
+
+    if (!isValidObjectId(id)) {
+      throw new BadRequestException(`The id is incorrect`);
+    }
+
+    const userInfo = await this.userModel.findById(id).exec();
+
+    if(!userInfo) {
+      throw new NotFoundException('User no exist');
+    }
+
     return this.userModel.findByIdAndDelete(id).exec();
   }
 }
