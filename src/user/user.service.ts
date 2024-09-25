@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './user.schema';
@@ -13,9 +13,10 @@ export class UserService {
   ) {}
 
   async create(user: User): Promise<User> {
+
     const hashedPassword = await bcrypt.hash(
       user.userPassword, 
-      this.configService.get<number>('BCRYPT_SALT_ROUNDS')
+      +this.configService.get<number>('BCRYPT_SALT_ROUNDS')
     );
     
     const newUser = new this.userModel({
@@ -33,7 +34,15 @@ export class UserService {
     return this.userModel.findById(id).exec();
   }
 
-  async update(id: string, user: Partial<User>): Promise<User> {
+  async update(id: string, user: User): Promise<User> {
+
+    const hashedPassword = await bcrypt.hash(
+      user.userPassword, 
+      +this.configService.get<number>('BCRYPT_SALT_ROUNDS')
+    );
+
+    user.userPassword = hashedPassword;
+
     return this.userModel.findByIdAndUpdate(id, user, { new: true }).exec();
   }
 
