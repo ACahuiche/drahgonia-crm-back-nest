@@ -22,6 +22,7 @@ export class AuthService {
 
     const payload = { 
       userId: user._id, 
+      userName: user.userName,
       isAdmin: user.isAdmin 
     };
 
@@ -32,17 +33,5 @@ export class AuthService {
     );
 
     return { token };
-  }
-
-  verifyToken(token: string) {
-    try {
-      return jwt.verify(
-        token, 
-        this.configService.get<string>('SECRET_KEY')
-      );
-      
-    } catch (e) {
-      throw new UnauthorizedException('Invalid token');
-    }
   }
 }

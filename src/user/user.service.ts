@@ -15,6 +15,12 @@ export class UserService {
 
   async create(user: User): Promise<User> {
 
+    const existingUser = await this.userModel.findOne({userEmail: user.userEmail});
+    
+    if(existingUser) {
+      throw new BadRequestException('The user exist, not is posible to register again')
+    }
+
     const hashedPassword = await bcrypt.hash(
       user.userPassword, 
       +this.configService.get<number>('BCRYPT_SALT_ROUNDS')
